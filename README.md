@@ -12,19 +12,18 @@
 ## Project Structure
 
 ```text
-.opencode/
-  skills/
-    long-term-memory/
-      SKILL.md
-      WORKFLOW.md
-      memory/
-        README.md
-        overview.md
-        index.json
-        items/
-          .keep
-        templates/
-          memory-entry.md
+.
+  SKILL.md
+  WORKFLOW.md
+  README.md
+  memory/
+    README.md
+    overview.md
+    index.json
+    items/
+      .keep
+    templates/
+      memory-entry.md
 ```
 
 ## How It Works
@@ -64,7 +63,7 @@
 - 写入示例：`记住：我在 opencode 项目里偏好先用 explore 子代理。`
 - 回忆示例：`回忆一下我之前关于 opencode 的偏好。`
 
-更多示例见 `.opencode/skills/long-term-memory/WORKFLOW.md`。
+更多示例见 `WORKFLOW.md`。
 
 ## Notes
 
