@@ -1,13 +1,13 @@
 # Long-Term Memory Skill for OpenCode
 
-一个可持续增长的长期记忆 Skill，支持“写入记忆 + 关键词回忆”，并采用渐进式披露，避免每次加载全部历史记忆。
+A scalable long-term memory skill that supports both memory writing and keyword-based recall using progressive disclosure, so you never need to load the full memory history every time.
 
 ## Features
 
-- 用户提到“记住/记录/存档”时写入长期记忆。
-- 用户提到“回忆/之前说过/关键词”时按关键词检索。
-- 先查索引再按需加载相关条目，避免全量读取。
-- 记忆文件全部保存在 skill 自身目录，便于迁移和版本管理。
+- Write durable memory entries when users ask to remember/save/archive something.
+- Recall previous memory by keywords or topic mentions.
+- Query index first, then load only top relevant entries.
+- Keep all memory files inside this skill directory for portability and version control.
 
 ## Project Structure
 
@@ -30,42 +30,42 @@
 
 ### Write Memory
 
-1. 识别用户明确的记忆意图（例如“帮我记住这件事”）。
-2. 生成单条记忆文件到 `memory/items/YYYY/`。
-3. 更新 `memory/index.json`（条目元数据 + 关键词倒排索引）。
-4. 更新 `memory/overview.md`（仅摘要级主题概览）。
+1. Detect explicit memory intent (for example: "remember this").
+2. Create one entry file under `memory/items/YYYY/`.
+3. Update `memory/index.json` (entry metadata + inverted keyword index).
+4. Update `memory/overview.md` (summary-level topic overview only).
 
 ### Recall Memory
 
-1. 从请求提取 1-5 个关键词。
-2. 只读取 `memory/index.json` 找候选条目。
-3. 仅打开最相关的 1-5 个记忆文件。
-4. 返回回忆内容并附命中关键词与来源条目。
+1. Extract 1-5 keywords from the user query.
+2. Read only `memory/index.json` to locate candidate entries.
+3. Open only the top 1-5 relevant memory files.
+4. Return recall result with matched keywords and source entries.
 
-## Why Not Put Everything in Skill Description
+## Why Not Store All Memory in Skill Description
 
-不建议把所有历史记忆都塞到 `SKILL.md` 的 `description` 里。随着记忆增长，会导致：
+Putting all historical memory into `SKILL.md` `description` does not scale:
 
-- 系统提示变长，成本上升。
-- 噪声增多，检索精度下降。
-- 维护困难，冲突难管理。
+- Prompt size and token cost grow quickly.
+- Signal-to-noise quality drops.
+- Maintenance and conflict handling become harder.
 
-本项目采用更稳定的三层结构：
+This project uses a stable 3-layer model:
 
-- `description`: 只放能力与触发条件。
-- `memory/overview.md`: 只放主题摘要。
-- `memory/items/*.md`: 放详细长期记忆。
+- `description`: capability + trigger conditions only.
+- `memory/overview.md`: topic-level summary only.
+- `memory/items/*.md`: full long-term memory details.
 
 ## Usage
 
-将该目录放入你的 OpenCode 项目后，触发相关意图即可使用：
+Place this directory into your OpenCode skills path and trigger by intent:
 
-- 写入示例：`记住：我在 opencode 项目里偏好先用 explore 子代理。`
-- 回忆示例：`回忆一下我之前关于 opencode 的偏好。`
+- Write example: `Remember that I prefer using explore subagents first for repo structure scanning.`
+- Recall example: `Recall what I said before about my OpenCode preference.`
 
-更多示例见 `WORKFLOW.md`。
+See `WORKFLOW.md` for more examples.
 
 ## Notes
 
-- 该 Skill 当前为文件型记忆实现，默认关键词检索。
-- 需要更大规模记忆时，可在后续升级为 SQLite/FTS 或向量混合检索。
+- Current implementation is file-backed keyword retrieval.
+- For larger scale, you can later upgrade to SQLite/FTS or hybrid vector retrieval.

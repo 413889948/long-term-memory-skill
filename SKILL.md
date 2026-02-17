@@ -1,31 +1,31 @@
 ---
 name: long-term-memory
-description: 为会话提供可持续的长期记忆能力。用户提到“记住/记录/存档”时创建记忆文件；用户提到“回忆/之前说过/关键词”时按关键词检索并只加载相关记忆文件（渐进式披露）。
+description: Provides durable long-term memory for conversations. Create memory files when users ask to remember/save something, and recall by keyword with progressive disclosure (load only relevant files).
 ---
 
 # Long-Term Memory Skill
 
 ## Purpose
 
-将用户要求长期保存的信息写入当前 skill 目录内的记忆库，并在后续按关键词精准回忆。
+Store user-requested long-term information inside this skill's memory store and recall it later by keyword.
 
-参考资料:
+References:
 
-- `WORKFLOW.md`: 写入/回忆示例与冲突处理。
-- `memory/templates/memory-entry.md`: 条目模板。
+- `WORKFLOW.md`: Write/recall examples and conflict handling.
+- `memory/templates/memory-entry.md`: Entry template.
 
 ## Hard Scope
 
-- 只允许在本 skill 目录内读写长期记忆文件。
-- 记忆文件根目录固定为 `memory/`。
-- 禁止把长期记忆写到仓库其他路径。
+- Only read/write long-term memory files inside this skill directory.
+- The memory root is fixed to `memory/`.
+- Never write long-term memory to other repository paths.
 
 ## Trigger Rules
 
-当出现以下意图时启用此 skill：
+Enable this skill when either intent appears:
 
-- **写入意图**: 用户说“记住”“帮我记一下”“长期保存”“记录这件事”等。
-- **回忆意图**: 用户说“回忆一下”“之前我说过”“你记得吗”“关于 <关键词> 之前怎么说的”等。
+- **Write intent**: User asks to remember, save, archive, or record something.
+- **Recall intent**: User asks to recall previous info, or references a previously stored keyword/topic.
 
 ## Storage Layout
 
@@ -44,65 +44,65 @@ memory/
 
 ### 1) `memory/index.json`
 
-- 全局索引，支持关键词到条目的快速定位。
-- `entries[]` 每项包含: `id`, `title`, `summary`, `keywords`, `file`, `created_at`, `updated_at`, `confidence`。
-- `keyword_map` 为关键词到 `id[]` 的倒排索引。
+- Global index for fast keyword-to-entry lookup.
+- Each `entries[]` item contains: `id`, `title`, `summary`, `keywords`, `file`, `created_at`, `updated_at`, `confidence`.
+- `keyword_map` is an inverted index from keyword to `id[]`.
 
 ### 2) `memory/items/**/*.md`
 
-- 每条长期记忆一个文件。
-- 文件头使用 YAML frontmatter，正文可追加上下文与来源。
+- One long-term memory per file.
+- Use YAML frontmatter, and append details/context below.
 
 ### 3) `memory/overview.md`
 
-- 只保留高层概览与主题导航。
-- 不放全量细节，避免提示词膨胀。
+- Keep only high-level summaries and topic navigation.
+- Do not place full details here to avoid prompt bloat.
 
 ## Progressive Disclosure Retrieval
 
-回忆时严格使用分层检索，不要一次性加载所有记忆：
+During recall, always use layered retrieval and do not load all memories at once:
 
-1. 先从用户请求提取 1-5 个关键词。
-2. 仅读取 `memory/index.json`，通过 `keyword_map` 找候选 `id`。
-3. 读取候选条目的 `summary` 与 `file`，按相关度选前 1-5 条。
-4. 只打开这些条目的文件获取详细信息。
-5. 回答后列出命中的关键词与条目标题。
+1. Extract 1-5 keywords from the user request.
+2. Read only `memory/index.json` and use `keyword_map` to find candidate `id` values.
+3. Rank candidates using `summary` and choose the top 1-5.
+4. Open only those memory files for details.
+5. Return the answer with matched keywords and entry titles.
 
-若没有精确命中：
+If there is no exact match:
 
-- 退化为对 `memory/items/` 的关键词搜索。
-- 仍然只加载最相关少量文件，不做全库扫描式展开。
+- Fallback to keyword search under `memory/items/`.
+- Still load only the most relevant small subset of files.
 
 ## Write Workflow
 
-当用户明确要求记忆时：
+When the user explicitly asks to remember something:
 
-1. 归纳要记住的事实，生成简洁 `title` 与 `summary`。
-2. 生成条目文件 `memory/items/YYYY/mem-YYYYMMDD-HHMMSS-<slug>.md`。
-3. 更新 `memory/index.json`:
-   - 追加或更新 `entries[]`
-   - 更新 `keyword_map`
-   - 更新时间戳
-4. 更新 `memory/overview.md` 的主题概览（仅摘要级）。
-5. 返回确认信息：已记住内容 + 可用于回忆的关键词。
+1. Distill the fact(s) to remember, then create a concise `title` and `summary`.
+2. Create an entry file at `memory/items/YYYY/mem-YYYYMMDD-HHMMSS-<slug>.md`.
+3. Update `memory/index.json`:
+   - append/update `entries[]`
+   - update `keyword_map`
+   - update timestamp
+4. Update topic-level summary in `memory/overview.md`.
+5. Confirm what was remembered and provide useful recall keywords.
 
 ## Read Workflow
 
-当用户要求回忆或提到旧关键词时：
+When the user asks to recall or mentions a stored keyword:
 
-1. 提取关键词并查 `memory/index.json`。
-2. 只读取命中条目文件。
-3. 输出回忆结果时标注：
-   - 命中关键词
-   - 来源条目标题
-   - 如有时间，附 `updated_at`
+1. Extract keywords and query `memory/index.json`.
+2. Read only matched entry files.
+3. In the response, include:
+   - matched keywords
+   - source entry title(s)
+   - `updated_at` when available
 
 ## Description Growth Policy
 
-不要把越来越多的记忆内容塞进本文件的 `description`。
+Do not keep expanding this file's `description` with memory content.
 
-- `description` 只描述能力与触发条件。
-- 记忆概述增长放在 `memory/overview.md`。
-- 详细信息始终放在 `memory/items/` 单条文件。
+- Keep `description` focused on capability and trigger conditions.
+- Put growing memory summaries in `memory/overview.md`.
+- Keep full details in individual files under `memory/items/`.
 
-这样可以保持 skill 可维护，并实现真正的渐进式披露。
+This keeps the skill maintainable and enables true progressive disclosure.

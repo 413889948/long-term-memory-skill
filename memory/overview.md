@@ -1,13 +1,13 @@
 # Long-Term Memory Overview
 
-本文件用于维护长期记忆的高层概览，避免把细节塞进 `SKILL.md`。
+This file keeps a high-level summary of long-term memory and avoids stuffing full details into `SKILL.md`.
 
 ## Topics
 
-- 目前暂无主题。
+- No topics yet.
 
 ## Usage Notes
 
-- 只记录主题级摘要，不记录全部细节。
-- 细节请写入 `memory/items/**/*.md`。
-- 每次新增记忆后同步更新本概览。
+- Keep only topic-level summaries here.
+- Write detailed records in `memory/items/**/*.md`.
+- Update this overview after every new memory entry.
